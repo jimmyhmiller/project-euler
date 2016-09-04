@@ -33,24 +33,6 @@
           (iterate generate [m0 d0 a0])))))
 
 
-(defn find-convergent-length [n]
-  (let [r (period-length n)]
-    (if (even? r)
-      r
-      (* 2 r))))
-
-(defn find-x-and-y [n]
-  (try
-    (let [length (find-convergent-length n)
-          conv (convergent (take length (map int (continued n))))
-          x (if (ratio? conv) (numerator conv) conv)
-          y (if (ratio? conv) (denominator conv) 1)]
-      [x y])
-    (catch Exception e [1 1])))
-
-
-(apply max-key #(first (second %)) (map (fn [D] [D (find-x-and-y D)]) (range 1000)))
-
 (defn convergent
   ([continueds]
    (convergent (rest continueds) (first continueds)))
@@ -68,12 +50,24 @@
   (count (period s)))
 
 
-(defn total-odd [n]
-  (->> (range (inc n))
-       (filter (complement square?))
-       (map period-length)
-       (filter odd?)
-       count))
+(defn find-convergent-length [n]
+  (let [r (period-length n)]
+    (if (even? r)
+      r
+      (* 2 r))))
+
+(defn find-x-and-y [n]
+  (try
+    (let [length (find-convergent-length n)
+          conv (convergent (take length (map int (continued n))))
+          x (if (ratio? conv) (numerator conv) conv)
+          y (if (ratio? conv) (denominator conv) 1)]
+      [x y])
+    (catch Exception e [1 1])))
 
 
-(println (total-odd 10000))
+(->> (range 1000)
+     (map (fn [D] [(find-x-and-y D) D]))
+     (apply max-key ffirst)
+     second)
+
